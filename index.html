@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora 3D Pro</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --accent: #059669;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --danger: #dc2626;
+            --input-bg: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header-title h1 {
+            font-size: 1.4rem;
+            color: var(--primary);
+            margin-bottom: 2px;
+        }
+
+        .header-title p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .icon-btn {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            margin-bottom: 14px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .row .form-group {
+            flex: 1;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f1f5f9;
+            color: var(--text-main);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 480px;
+            max-height: 85vh;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 -10px 25px rgba(0,0,0,0.1);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 4px;
+        }
+
+        .filament-list-container {
+            overflow-y: auto;
+            max-height: 220px;
+            margin-bottom: 16px;
+            padding-right: 4px;
+        }
+
+        .filament-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--input-bg);
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border);
+        }
+
+        .filament-item span strong {
+            color: var(--accent);
+        }
+
+        .del-btn {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 4px;
+        }
+
+        .del-btn:hover {
+            opacity: 0.7;
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 2px solid #cbd5e1;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .result-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .result-total span:last-child {
+            color: var(--accent);
+            font-size: 1.4rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <div class="header-title">
+            <h1>Calculadora 3D Pro</h1>
+            <p>Orçamentação Profissional</p>
+        </div>
+        <button class="icon-btn" onclick="toggleModal(true)" title="Gerir Filamentos">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+        </button>
+    </header>
+
+    <div class="card">
+        <h2>⚙️ Parâmetros da Impressão</h2>
+        
+        <div class="form-group">
+            <label>Filamento Utilizado</label>
+            <select id="selectFilament" onchange="calcular()"></select>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>Quantidade (peças)</label>
+                <input type="number" id="qtd" value="1" min="1" oninput="calcular()">
+            </div>
+            <div class="form-group">
+                <label>Peso por peça (g)</label>
+                <input type="number" id="peso" value="50" step="1" oninput="calcular()">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>Tempo por peça (min)</label>
+                <input type="number" id="tempo" value="120" oninput="calcular()">
+            </div>
+            <div class="form-group">
+                <label>Potência Média (W)</label>
+                <input type="number" id="potencia" value="350" oninput="calcular()">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>Preço Energia (€/kWh)</label>
+                <input type="number" id="custoEnergia" value="0.16" step="0.01" oninput="calcular()">
+            </div>
+            <div class="form-group">
+                <label>Desgaste / Manutenção (€/h)</label>
+                <input type="number" id="desgaste" value="0.20" step="0.05" oninput="calcular()">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>Taxa de Falhas/Risco (%)</label>
+                <input type="number" id="falhas" value="10" min="0" max="100" oninput="calcular()">
+            </div>
+            <div class="form-group">
+                <label>Margem de Lucro (%)</label>
+                <input type="number" id="lucro" value="30" min="0" oninput="calcular()">
+            </div>
+        </div>
+    </div>
+
+    <div class="card result-box">
+        <h2>📊 Resumo de Custos</h2>
+        <div class="result-row">
+            <span>Custo Filamento:</span>
+            <span id="resFilamento">0.00 €</span>
+        </div>
+        <div class="result-row">
+            <span>Custo Energia:</span>
+            <span id="resEnergia">0.00 €</span>
+        </div>
+        <div class="result-row">
+            <span>Desgaste Máquina:</span>
+            <span id="resDesgaste">0.00 €</span>
+        </div>
+        <div class="result-row">
+            <span>Segurança / Falhas:</span>
+            <span id="resFalhas">0.00 €</span>
+        </div>
+        <div class="result-total">
+            <span>Preço Sugerido:</span>
+            <span id="resTotal">0.00 €</span>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="filamentModal" onclick="handleOverlayClick(event)">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>🎨 Gestão de Filamentos</h2>
+            <button class="close-modal" onclick="toggleModal(false)">&times;</button>
+        </div>
+        
+        <div class="filament-list-container" id="filamentList"></div>
+        
+        <div style="border-top: 1px solid var(--border); padding-top: 14px;">
+            <div class="row">
+                <div class="form-group">
+                    <label>Nome / Marca</label>
+                    <input type="text" id="newFilamentName" placeholder="Ex: PLA Preto">
+                </div>
+                <div class="form-group">
+                    <label>Preço (€/kg)</label>
+                    <input type="number" id="newFilamentPrice" step="0.5" placeholder="22.00">
+                </div>
+            </div>
+            <button class="btn" onclick="addFilament()">Adicionar Filamento</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let filaments = JSON.parse(localStorage.getItem('print_filaments')) || [
+        { id: 1, name: 'PLA Genérico (Preto/Branco)', price: 20.00 },
+        { id: 2, name: 'PETG Preto', price: 24.00 },
+        { id: 3, name: 'TPU Flexível', price: 32.00 }
+    ];
+
+    function toggleModal(open) {
+        const modal = document.getElementById('filamentModal');
+        if (open) {
+            modal.classList.add('active');
+        } else {
+            modal.classList.remove('active');
+        }
+    }
+
+    function handleOverlayClick(event) {
+        if (event.target === document.getElementById('filamentModal')) {
+            toggleModal(false);
+        }
+    }
+
+    function saveFilaments() {
+        localStorage.setItem('print_filaments', JSON.stringify(filaments));
+    }
+
+    function renderFilaments() {
+        const listEl = document.getElementById('filamentList');
+        const selectEl = document.getElementById('selectFilament');
+        
+        const currentSelectedValue = selectEl.value;
+
+        listEl.innerHTML = '';
+        selectEl.innerHTML = '';
+
+        filaments.forEach(f => {
+            listEl.innerHTML += `
+                <div class="filament-item">
+                    <span>${f.name} (<strong>${f.price.toFixed(2)} €/kg</strong>)</span>
+                    <button class="del-btn" onclick="deleteFilament(${f.id})">&times;</button>
+                </div>
+            `;
+            selectEl.innerHTML += `<option value="${f.price}">${f.name} (${f.price.toFixed(2)} €/kg)</option>`;
+        });
+
+        if (currentSelectedValue) {
+            selectEl.value = currentSelectedValue;
+        }
+
+        calcular();
+    }
+
+    function addFilament() {
+        const nameInput = document.getElementById('newFilamentName');
+        const priceInput = document.getElementById('newFilamentPrice');
+
+        if (!nameInput.value || !priceInput.value) {
+            return;
+        }
+
+        const newId = filaments.length > 0 ? filaments[filaments.length - 1].id + 1 : 1;
+        filaments.push({
+            id: newId,
+            name: nameInput.value,
+            price: parseFloat(priceInput.value)
+        });
+
+        nameInput.value = '';
+        priceInput.value = '';
+
+        saveFilaments();
+        renderFilaments();
+    }
+
+    function deleteFilament(id) {
+        if (filaments.length <= 1) {
+            return;
+        }
+        filaments = filaments.filter(f => f.id !== id);
+        saveFilaments();
+        renderFilaments();
+    }
+
+    function calcular() {
+        const precoKg = parseFloat(document.getElementById('selectFilament').value) || 0;
+        const qtd = parseFloat(document.getElementById('qtd').value) || 0;
+        const pesoPorPeca = parseFloat(document.getElementById('peso').value) || 0;
+        const tempoPorPeca = parseFloat(document.getElementById('tempo').value) || 0;
+        const potenciaW = parseFloat(document.getElementById('potencia').value) || 0;
+        const custoKWh = parseFloat(document.getElementById('custoEnergia').value) || 0;
+        const custoDesgasteHora = parseFloat(document.getElementById('desgaste').value) || 0;
+        const taxaFalhas = parseFloat(document.getElementById('falhas').value) || 0;
+        const margemLucro = parseFloat(document.getElementById('lucro').value) || 0;
+
+        const pesoTotalGrams = pesoPorPeca * qtd;
+        const tempoTotalMinutos = tempoPorPeca * qtd;
+        const tempoTotalHoras = tempoTotalMinutos / 60;
+
+        const custoFilamento = (pesoTotalGrams / 1000) * precoKg;
+        const consumoKWh = (potenciaW / 1000) * tempoTotalHoras;
+        const custoEnergia = consumoKWh * custoKWh;
+        const custoDesgaste = tempoTotalHoras * custoDesgasteHora;
+
+        const subtotalCustos = custoFilamento + custoEnergia + custoDesgaste;
+        const valorFalhas = subtotalCustos * (taxaFalhas / 100);
+        const custoTotalProducao = subtotalCustos + valorFalhas;
+        const precoFinal = custoTotalProducao * (1 + (margemLucro / 100));
+
+        document.getElementById('resFilamento').innerText = custoFilamento.toFixed(2) + ' €';
+        document.getElementById('resEnergia').innerText = custoEnergia.toFixed(2) + ' €';
+        document.getElementById('resDesgaste').innerText = custoDesgaste.toFixed(2) + ' €';
+        document.getElementById('resFalhas').innerText = valorFalhas.toFixed(2) + ' €';
+        document.getElementById('resTotal').innerText = precoFinal.toFixed(2) + ' €';
+    }
+
+    renderFilaments();
+</script>
+
+</body>
+</html>
